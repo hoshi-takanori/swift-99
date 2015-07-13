@@ -3,7 +3,17 @@
 //: Problem 1 (*) Find the last element of a list.
 
 func myLast<T>(list: List<T>) -> T? {
-    return nil
+    switch list {
+    case .Nil:
+        return nil
+    case let .Cons(head, tail):
+        switch tail.value {
+        case .Nil:
+            return head.value
+        default:
+            return myLast(tail.value)
+        }
+    }
 }
 
 myLast(List<Int>())
@@ -13,7 +23,22 @@ myLast(List("x", "y", "z"))
 //: Problem 2 (*) Find the last but one element of a list.
 
 func myButLast<T>(list: List<T>) -> T? {
-    return nil
+    switch list {
+    case .Nil:
+        return nil
+    case let .Cons(head, tail):
+        switch tail.value {
+        case .Nil:
+            return nil
+        case let .Cons(_, tail2):
+            switch tail2.value {
+            case .Nil:
+                return head.value
+            default:
+                return myButLast(tail.value)
+            }
+        }
+    }
 }
 
 myButLast(List<Int>())
@@ -27,7 +52,18 @@ myButLast(List("x", "y", "z"))
 //: The first element in the list is number 1.
 
 func elementAt<T>(list: List<T>, _ index: Int) -> T? {
-    return nil
+    switch list {
+    case .Nil:
+        return nil
+    case let .Cons(head, tail):
+        if index <= 0 {
+            return nil
+        } else if index == 1 {
+            return head.value
+        } else {
+            return elementAt(tail.value, index - 1)
+        }
+    }
 }
 
 elementAt(List(1, 2, 3, 4), 2)
@@ -36,7 +72,15 @@ elementAt(ListFromString("Swift"), 5)
 //: Problem 4 (*) Find the number of elements of a list.
 
 func myLength<T>(list: List<T>) -> Int {
-    return 0
+    func length(cnt: Int, _ list: List<T>) -> Int {
+        switch list {
+        case .Nil:
+            return cnt
+        case let .Cons(_, tail):
+            return length(cnt + 1, tail.value)
+        }
+    }
+    return length(0, list)
 }
 
 myLength(List(123, 456, 789))
@@ -45,7 +89,15 @@ myLength(ListFromString("Hello, world!"))
 //: Problem 5 (*) Reverse a list.
 
 func myReverse<T>(list: List<T>) -> List<T> {
-    return .Nil
+    func reverse(rev: List<T>, _ list: List<T>) -> List<T> {
+        switch list {
+        case .Nil:
+            return rev
+        case let .Cons(head, tail):
+            return reverse(List(head.value, rev), tail.value)
+        }
+    }
+    return reverse(.Nil, list)
 }
 
 ListToString(myReverse(ListFromString("A man, a plan, a canal, panama!")))
@@ -55,7 +107,29 @@ myReverse(List(1, 2, 3, 4)).toArray()
 //: A palindrome can be read forward or backward; e.g. (x a m a x).
 
 func isPalindrome<T: Comparable>(list: List<T>) -> Bool {
-    return false
+    func equals(list1: List<T>, _ list2: List<T>) -> Bool {
+        switch list1 {
+        case .Nil:
+            switch list2 {
+            case .Nil:
+                return true
+            default:
+                return false
+            }
+        case let .Cons(head, tail):
+            switch list2 {
+            case .Nil:
+                return false
+            case let .Cons(head2, tail2):
+                if head.value == head2.value {
+                    return equals(tail.value, tail2.value)
+                } else {
+                    return false
+                }
+            }
+        }
+    }
+    return equals(list, myReverse(list))
 }
 
 isPalindrome(List(1, 2, 3))
@@ -79,19 +153,34 @@ func Elem<T>(value: T) -> Nest<T> {
 }
 
 func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
-    return .Nil
+    switch list1 {
+    case .Nil:
+        return list2
+    case let .Cons(head, tail):
+        return List(head.value, append(tail.value, list2))
+    }
 }
 
 append(List(1, 2, 3), List(4, 5, 6)).toArray()
 
 func appendAll<T>(list: List<List<T>>) -> List<T> {
-    return .Nil
+    switch list {
+    case .Nil:
+        return .Nil
+    case let .Cons(head, tail):
+        return append(head.value, appendAll(tail.value))
+    }
 }
 
 appendAll(List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))).toArray()
 
 func flatten<T>(nest: Nest<T>) -> List<T> {
-    return .Nil
+    switch nest {
+    case let .Elem(elem):
+        return List(elem.value)
+    case let .NestedList(nested):
+        return appendAll(nested.map(flatten))
+    }
 }
 
 flatten(Elem(5)).toArray()
@@ -113,7 +202,21 @@ flatten(Nest<Int>()).toArray()
 //: copy of the element. The order of the elements should not be changed.
 
 func compress<T: Comparable>(list: List<T>) -> List<T> {
-    return .Nil
+    switch list {
+    case .Nil:
+        return .Nil
+    case let .Cons(head, tail):
+        switch tail.value {
+        case .Nil:
+            return list
+        case let .Cons(head2, _):
+            if head.value == head2.value {
+                return compress(tail.value)
+            } else {
+                return List(head.value, compress(tail.value))
+            }
+        }
+    }
 }
 
 ListToString(compress(ListFromString("aaaabccaadeeee")))
@@ -122,7 +225,27 @@ ListToString(compress(ListFromString("aaaabccaadeeee")))
 //: If a list contains repeated elements they should be placed in separate sublists.
 
 func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
-    return .Nil
+    switch list {
+    case .Nil:
+        return .Nil
+    case let .Cons(head, tail):
+        let packed = pack(tail.value)
+        switch packed {
+        case .Nil:
+            return List(list, packed)
+        case let .Cons(head2, tail2):
+            switch head2.value {
+            case .Nil:
+                return List(list, tail2.value)
+            case let .Cons(head3, _):
+                if head.value == head3.value {
+                    return List(List(head.value, head2.value), tail2.value)
+                } else {
+                    return List(List(head.value, .Nil), packed)
+                }
+            }
+        }
+    }
 }
 
 pack(ListFromString("aaaabccaadeeee")).map(ListToString).toArray()
@@ -133,7 +256,20 @@ pack(ListFromString("aaaabccaadeeee")).map(ListToString).toArray()
 //: number of duplicates of the element E.
 
 func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
-    return .Nil
+    func conv<T>(list: List<List<T>>) -> List<(Int, T)> {
+        switch list {
+        case .Nil:
+            return .Nil
+        case let .Cons(head, tail):
+            switch head.value {
+            case .Nil:
+                return conv(tail.value)
+            case let .Cons(head2, _):
+                return List((myLength(head.value), head2.value), conv(tail.value))
+            }
+        }
+    }
+    return conv(pack(list))
 }
 
 encode(ListFromString("aaaabccaadeeee")).toArray()
