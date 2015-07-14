@@ -2,10 +2,6 @@ public enum List<T> {
     case Nil
     case Cons(Wrap<T>, Wrap<List>)
 
-    public init(_ head: T, _ tail: List<T>) {
-        self = .Cons(Wrap(head), Wrap(tail))
-    }
-
     public init(_ arr: [T]) {
         self = listFromSlice(arr[0..<arr.count])
     }
@@ -34,9 +30,13 @@ public enum List<T> {
     }
 }
 
+public func Cons<T>(head: T, _ tail: List<T>) -> List<T> {
+    return .Cons(Wrap(head), Wrap(tail))
+}
+
 func listFromSlice<T>(arr: ArraySlice<T>) -> List<T> {
     if arr.count == 0 { return List.Nil }
-    return List(arr[0], listFromSlice(arr[1..<arr.count]))
+    return Cons(arr[0], listFromSlice(arr[1..<arr.count]))
 }
 
 public func ListFromString(str: String) -> List<Character> {
