@@ -94,7 +94,7 @@ func myReverse<T>(list: List<T>) -> List<T> {
         case .Nil:
             return rev
         case let .Cons(head, tail):
-            return reverse(List(head.value, rev), tail.value)
+            return reverse(Cons(head.value, rev), tail.value)
         }
     }
     return reverse(.Nil, list)
@@ -157,7 +157,7 @@ func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
     case .Nil:
         return list2
     case let .Cons(head, tail):
-        return List(head.value, append(tail.value, list2))
+        return Cons(head.value, append(tail.value, list2))
     }
 }
 
@@ -213,7 +213,7 @@ func compress<T: Comparable>(list: List<T>) -> List<T> {
             if head.value == head2.value {
                 return compress(tail.value)
             } else {
-                return List(head.value, compress(tail.value))
+                return Cons(head.value, compress(tail.value))
             }
         }
     }
@@ -232,16 +232,16 @@ func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
         let packed = pack(tail.value)
         switch packed {
         case .Nil:
-            return List(list, packed)
+            return Cons(list, packed)
         case let .Cons(head2, tail2):
             switch head2.value {
             case .Nil:
-                return List(list, tail2.value)
+                return Cons(list, tail2.value)
             case let .Cons(head3, _):
                 if head.value == head3.value {
-                    return List(List(head.value, head2.value), tail2.value)
+                    return Cons(Cons(head.value, head2.value), tail2.value)
                 } else {
-                    return List(List(head.value, .Nil), packed)
+                    return Cons(Cons(head.value, .Nil), packed)
                 }
             }
         }
@@ -265,7 +265,7 @@ func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
             case .Nil:
                 return conv(tail.value)
             case let .Cons(head2, _):
-                return List((myLength(head.value), head2.value), conv(tail.value))
+                return Cons((myLength(head.value), head2.value), conv(tail.value))
             }
         }
     }
