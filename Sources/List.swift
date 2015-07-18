@@ -47,11 +47,25 @@ public func ListFromString(str: String) -> List<Character> {
     return listFromSlice(arr[0..<arr.count])
 }
 
-public func ListToString(var list: List<Character>) -> String {
-    var str = ""
-    while case let .Cons(head, tail) = list {
-        str.append(head.value)
-        list = tail.value
+// we need to have a protocol to define List<Character>.toString().
+// see http://ericasadun.com/2015/06/26/swift-protocol-requirements/
+
+protocol CharacterProtocol {
+    var asCharacter: Character { get }
+}
+
+extension Character: CharacterProtocol {
+    var asCharacter: Character { return self }
+}
+
+public extension List where T: CharacterProtocol {
+    func toString() -> String {
+        var str = ""
+        var list = self
+        while case let .Cons(head, tail) = list {
+            str.append(head.value.asCharacter)
+            list = tail.value
+        }
+        return str
     }
-    return str
 }

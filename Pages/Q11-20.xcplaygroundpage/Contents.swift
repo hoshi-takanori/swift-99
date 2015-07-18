@@ -26,10 +26,12 @@ func decodeModified<T>(list: List<Code<T>>) -> List<T> {
     return .Nil
 }
 
-ListToString(decodeModified(List(.Single("a"), .Multiple(3, "b"))))
-ListToString(decodeModified(List(
-    .Multiple(4, "a"), .Single("b"), .Multiple(2, "c"),
-    .Multiple(2, "a"), .Single("d"), .Multiple(4, "e"))))
+decodeModified(List(.Single(Character("a")), .Multiple(3, Character("b")))).toString()
+decodeModified(List(
+    .Multiple(4, Character("a")), .Single(Character("b")), .Multiple(2, Character("c")),
+    .Multiple(2, Character("a")), .Single(Character("d")), .Multiple(4, Character("e")))).toString()
+
+decodeModified(encodeModified(ListFromString("aaaabccaadeeee"))).toString()
 
 //: Problem 13 (**) Run-length encoding of a list (direct solution).
 //:
@@ -43,6 +45,8 @@ func encodeDirect<T: Comparable>(list: List<T>) -> List<Code<T>> {
 }
 
 encodeDirect(ListFromString("aaaabccaadeeee")).toArray()
+
+decodeModified(encodeDirect(ListFromString("aaaabccaadeeee"))).toString()
 
 //: Problem 14 (*) Duplicate the elements of a list.
 
@@ -58,7 +62,7 @@ func repli<T>(list: List<T>, _ cnt: Int) -> List<T> {
     return .Nil
 }
 
-ListToString(repli(ListFromString("abc"), 3))
+repli(ListFromString("abc"), 3).toString()
 
 //: Problem 16 (**) Drop every N'th element from a list.
 
@@ -66,7 +70,7 @@ func dropEvery<T>(list: List<T>, _ skip: Int) -> List<T> {
     return .Nil
 }
 
-ListToString(dropEvery(ListFromString("abcdefghik"), 3))
+dropEvery(ListFromString("abcdefghik"), 3).toString()
 
 //: Problem 17 (*) Split a list into two parts; the length of the first part is given.
 
@@ -75,7 +79,7 @@ func split<T>(list: List<T>, _ len: Int) -> (List<T>, List<T>) {
 }
 
 let (a, b) = split(ListFromString("abcdefghik"), 3)
-(ListToString(a), ListToString(b))
+(a.toString(), b.toString())
 
 //: Problem 18 (**) Extract a slice from a list.
 //:
@@ -87,7 +91,7 @@ func slice<T>(list: List<T>, _ start: Int, _ end: Int) -> List<T> {
     return .Nil
 }
 
-ListToString(slice(ListFromString("abcdefghik"), 3, 7))
+slice(ListFromString("abcdefghik"), 3, 7).toString()
 
 //: Problem 19 (**) Rotate a list N places to the left.
 //:
@@ -97,8 +101,8 @@ func rotate<T>(list: List<T>, _ cnt: Int) -> List<T> {
     return .Nil
 }
 
-ListToString(rotate(ListFromString("abcdefgh"), 3))
-ListToString(rotate(ListFromString("abcdefgh"), -2))
+rotate(ListFromString("abcdefgh"), 3).toString()
+rotate(ListFromString("abcdefgh"), -2).toString()
 
 //: Problem 20 (*) Remove the K'th element from a list.
 
@@ -107,6 +111,6 @@ func removeAt<T>(list: List<T>, _ index: Int) -> (T?, List<T>) {
 }
 
 let (c, d) = removeAt(ListFromString("abcd"), 2)
-(c, ListToString(d))
+(c, d.toString())
 
 //: [Next](@next)
