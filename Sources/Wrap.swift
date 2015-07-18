@@ -1,3 +1,6 @@
+// we need to have a wrapper class to define a recursive enum List<T>.
+// see http://www.quora.com/How-can-enumerations-in-Swift-be-recursive
+
 public final class Wrap<T> {
     public let value: T
 

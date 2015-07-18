@@ -100,7 +100,7 @@ func myReverse<T>(list: List<T>) -> List<T> {
     return reverse(.Nil, list)
 }
 
-ListToString(myReverse(ListFromString("A man, a plan, a canal, panama!")))
+myReverse(ListFromString("A man, a plan, a canal, panama!")).toString()
 myReverse(List(1, 2, 3, 4)).toArray()
 
 //: Problem 6 (*) Find out whether a list is a palindrome.
@@ -219,7 +219,7 @@ func compress<T: Comparable>(list: List<T>) -> List<T> {
     }
 }
 
-ListToString(compress(ListFromString("aaaabccaadeeee")))
+compress(ListFromString("aaaabccaadeeee")).toString()
 
 //: Problem 9 (**) Pack consecutive duplicates of list elements into sublists.
 //: If a list contains repeated elements they should be placed in separate sublists.
@@ -248,7 +248,7 @@ func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
     }
 }
 
-pack(ListFromString("aaaabccaadeeee")).map(ListToString).toArray()
+pack(ListFromString("aaaabccaadeeee")).map{$0.toString()}.toArray()
 
 //: Problem 10 (*) Run-length encoding of a list. Use the result of problem P09
 //: to implement the so-called run-length encoding data compression method.
