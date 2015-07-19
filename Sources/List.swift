@@ -1,6 +1,6 @@
 public enum List<T> {
     case Nil
-    case Cons(Wrap<T>, Wrap<List>)
+    case Cons(Box<T>, Box<List>)
 
     public init(_ arr: [T]) {
         self = listFromSlice(arr[0..<arr.count])
@@ -10,12 +10,12 @@ public enum List<T> {
         self = listFromSlice(args[0..<args.count])
     }
 
-    public func map<S>(f: (T) -> S) -> List<S> {
+    public func map<S>(f: T -> S) -> List<S> {
         switch self {
         case .Nil:
             return List<S>.Nil
         case let .Cons(head, tail):
-            return List<S>.Cons(Wrap(f(head.value)), Wrap(tail.value.map(f)))
+            return List<S>.Cons(Box(f(head.value)), Box(tail.value.map(f)))
         }
     }
 
@@ -31,7 +31,7 @@ public enum List<T> {
 }
 
 public func Cons<T>(head: T, _ tail: List<T>) -> List<T> {
-    return .Cons(Wrap(head), Wrap(tail))
+    return .Cons(Box(head), Box(tail))
 }
 
 func listFromSlice<T>(arr: ArraySlice<T>) -> List<T> {
@@ -68,4 +68,8 @@ public extension List where T: CharacterProtocol {
         }
         return str
     }
+}
+
+public func ListToString(list: List<Character>) -> String {
+    return list.toString()
 }

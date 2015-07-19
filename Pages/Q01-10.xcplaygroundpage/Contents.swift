@@ -142,14 +142,14 @@ isPalindrome(List(1, 2, 4, 8, 16, 8, 4, 2, 1))
 //: by replacing each list with its elements (recursively).
 
 enum Nest<T> {
-    case Elem(Wrap<T>)
+    case Elem(Box<T>)
     case NestedList(List<Nest>)
 
     init(_ args: Nest<T>...) { self = .NestedList(List(args)) }
 }
 
 func Elem<T>(value: T) -> Nest<T> {
-    return .Elem(Wrap(value))
+    return .Elem(Box(value))
 }
 
 func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
@@ -248,7 +248,7 @@ func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
     }
 }
 
-pack(ListFromString("aaaabccaadeeee")).map{$0.toString()}.toArray()
+pack(ListFromString("aaaabccaadeeee")).map(ListToString).toArray()
 
 //: Problem 10 (*) Run-length encoding of a list. Use the result of problem P09
 //: to implement the so-called run-length encoding data compression method.
@@ -256,7 +256,7 @@ pack(ListFromString("aaaabccaadeeee")).map{$0.toString()}.toArray()
 //: number of duplicates of the element E.
 
 func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
-    func conv<T>(list: List<List<T>>) -> List<(Int, T)> {
+    func conv(list: List<List<T>>) -> List<(Int, T)> {
         switch list {
         case .Nil:
             return .Nil

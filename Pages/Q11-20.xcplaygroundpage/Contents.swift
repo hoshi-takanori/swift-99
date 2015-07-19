@@ -231,12 +231,15 @@ rotate(ListFromString("abcdefgh"), -2).toString()
 
 func removeAt<T>(list: List<T>, _ index: Int) -> (T?, List<T>) {
     let (a, b) = split(list, index - 1)
-    let (c, d) = split(b, 1)
-    switch c {
+    switch b {
     case .Nil:
-        return (nil, append(a, d))
-    case let .Cons(head, _):
-        return (head.value, append(a, d))
+        return (nil, list)
+    case let .Cons(head, tail):
+        if index <= 0 {
+            return (nil, list)
+        } else {
+            return (head.value, append(a, tail.value))
+        }
     }
 }
 
