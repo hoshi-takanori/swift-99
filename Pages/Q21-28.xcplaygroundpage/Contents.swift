@@ -65,7 +65,7 @@ func group<T>(cnts: List<Int>, _ list: List<T>) -> List<List<List<T>>> {
     return .Nil
 }
 
-let g = group(List(2, 2, 2), ListFromString("abcdef")).map{$0.map(ListToString).toArray()}.toArray()
+let g = group(List(2, 3), ListFromString("abcde")).map{$0.map(ListToString).toArray()}.toArray()
 g.count
 g
 

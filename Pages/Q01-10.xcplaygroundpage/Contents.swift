@@ -68,14 +68,14 @@ isPalindrome(List(1, 2, 4, 8, 16, 8, 4, 2, 1))
 //: by replacing each list with its elements (recursively).
 
 enum Nest<T> {
-    case Elem(Box<T>)
+    indirect case Elem(T)
     case NestedList(List<Nest>)
 
     init(_ args: Nest<T>...) { self = .NestedList(List(args)) }
 }
 
 func Elem<T>(value: T) -> Nest<T> {
-    return .Elem(Box(value))
+    return .Elem(value)
 }
 
 func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
