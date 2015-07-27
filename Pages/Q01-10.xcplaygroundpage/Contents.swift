@@ -7,11 +7,11 @@ func myLast<T>(list: List<T>) -> T? {
     case .Nil:
         return nil
     case let .Cons(head, tail):
-        switch tail.value {
+        switch tail {
         case .Nil:
-            return head.value
+            return head
         default:
-            return myLast(tail.value)
+            return myLast(tail)
         }
     }
 }
@@ -27,15 +27,15 @@ func myButLast<T>(list: List<T>) -> T? {
     case .Nil:
         return nil
     case let .Cons(head, tail):
-        switch tail.value {
+        switch tail {
         case .Nil:
             return nil
         case let .Cons(_, tail2):
-            switch tail2.value {
+            switch tail2 {
             case .Nil:
-                return head.value
+                return head
             default:
-                return myButLast(tail.value)
+                return myButLast(tail)
             }
         }
     }
@@ -59,9 +59,9 @@ func elementAt<T>(list: List<T>, _ index: Int) -> T? {
         if index <= 0 {
             return nil
         } else if index == 1 {
-            return head.value
+            return head
         } else {
-            return elementAt(tail.value, index - 1)
+            return elementAt(tail, index - 1)
         }
     }
 }
@@ -77,7 +77,7 @@ func myLength<T>(list: List<T>) -> Int {
         case .Nil:
             return cnt
         case let .Cons(_, tail):
-            return length(cnt + 1, tail.value)
+            return length(cnt + 1, tail)
         }
     }
     return length(0, list)
@@ -94,7 +94,7 @@ func myReverse<T>(list: List<T>) -> List<T> {
         case .Nil:
             return rev
         case let .Cons(head, tail):
-            return reverse(Cons(head.value, rev), tail.value)
+            return reverse(.Cons(head, rev), tail)
         }
     }
     return reverse(.Nil, list)
@@ -121,8 +121,8 @@ func isPalindrome<T: Comparable>(list: List<T>) -> Bool {
             case .Nil:
                 return false
             case let .Cons(head2, tail2):
-                if head.value == head2.value {
-                    return equals(tail.value, tail2.value)
+                if head == head2 {
+                    return equals(tail, tail2)
                 } else {
                     return false
                 }
@@ -142,14 +142,14 @@ isPalindrome(List(1, 2, 4, 8, 16, 8, 4, 2, 1))
 //: by replacing each list with its elements (recursively).
 
 enum Nest<T> {
-    case Elem(Box<T>)
+    indirect case Elem(T)
     case NestedList(List<Nest>)
 
     init(_ args: Nest<T>...) { self = .NestedList(List(args)) }
 }
 
 func Elem<T>(value: T) -> Nest<T> {
-    return .Elem(Box(value))
+    return .Elem(value)
 }
 
 func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
@@ -157,7 +157,7 @@ func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
     case .Nil:
         return list2
     case let .Cons(head, tail):
-        return Cons(head.value, append(tail.value, list2))
+        return .Cons(head, append(tail, list2))
     }
 }
 
@@ -168,7 +168,7 @@ func appendAll<T>(list: List<List<T>>) -> List<T> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        return append(head.value, appendAll(tail.value))
+        return append(head, appendAll(tail))
     }
 }
 
@@ -177,7 +177,7 @@ appendAll(List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))).toArray()
 func flatten<T>(nest: Nest<T>) -> List<T> {
     switch nest {
     case let .Elem(elem):
-        return List(elem.value)
+        return List(elem)
     case let .NestedList(nested):
         return appendAll(nested.map(flatten))
     }
@@ -206,14 +206,14 @@ func compress<T: Comparable>(list: List<T>) -> List<T> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        switch tail.value {
+        switch tail {
         case .Nil:
             return list
         case let .Cons(head2, _):
-            if head.value == head2.value {
-                return compress(tail.value)
+            if head == head2 {
+                return compress(tail)
             } else {
-                return Cons(head.value, compress(tail.value))
+                return .Cons(head, compress(tail))
             }
         }
     }
@@ -229,19 +229,19 @@ func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        let packed = pack(tail.value)
+        let packed = pack(tail)
         switch packed {
         case .Nil:
-            return Cons(list, packed)
+            return .Cons(list, packed)
         case let .Cons(head2, tail2):
-            switch head2.value {
+            switch head2 {
             case .Nil:
-                return Cons(list, tail2.value)
+                return .Cons(list, tail2)
             case let .Cons(head3, _):
-                if head.value == head3.value {
-                    return Cons(Cons(head.value, head2.value), tail2.value)
+                if head == head3 {
+                    return .Cons(.Cons(head, head2), tail2)
                 } else {
-                    return Cons(Cons(head.value, .Nil), packed)
+                    return .Cons(.Cons(head, .Nil), packed)
                 }
             }
         }
@@ -261,11 +261,11 @@ func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
         case .Nil:
             return .Nil
         case let .Cons(head, tail):
-            switch head.value {
+            switch head {
             case .Nil:
-                return conv(tail.value)
+                return conv(tail)
             case let .Cons(head2, _):
-                return Cons((myLength(head.value), head2.value), conv(tail.value))
+                return .Cons((myLength(head), head2), conv(tail))
             }
         }
     }

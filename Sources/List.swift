@@ -1,6 +1,9 @@
+// we need to use switch instead of guard/if/while until next beta.
+// https://forums.developer.apple.com/message/31981
+
 public enum List<T> {
     case Nil
-    case Cons(Box<T>, Box<List>)
+    indirect case Cons(T, List)
 
     public init(_ arr: [T]) {
         self = listFromSlice(arr[0..<arr.count])
@@ -15,28 +18,39 @@ public enum List<T> {
         case .Nil:
             return List<S>.Nil
         case let .Cons(head, tail):
-            return List<S>.Cons(Box(f(head.value)), Box(tail.value.map(f)))
+            return List<S>.Cons(f(head), tail.map(f))
+        }
+    }
+
+    public func reduce<S>(zero: S, _ f: (S, T) -> S) -> S {
+        switch self {
+        case .Nil:
+            return zero
+        case let .Cons(head, tail):
+            return tail.reduce(f(zero, head), f)
+        }
+    }
+
+    public func forEach(f: T -> ()) {
+        switch self {
+        case .Nil:
+            break
+        case let .Cons(head, tail):
+            f(head)
+            tail.forEach(f)
         }
     }
 
     public func toArray() -> [T] {
         var arr = [T]()
-        var list = self
-        while case let .Cons(head, tail) = list {
-            arr.append(head.value)
-            list = tail.value
-        }
+        self.forEach{arr.append($0)}
         return arr
     }
 }
 
-public func Cons<T>(head: T, _ tail: List<T>) -> List<T> {
-    return .Cons(Box(head), Box(tail))
-}
-
 func listFromSlice<T>(arr: ArraySlice<T>) -> List<T> {
     if arr.count == 0 { return List.Nil }
-    return Cons(arr[0], listFromSlice(arr[1..<arr.count]))
+    return .Cons(arr[0], listFromSlice(arr[1..<arr.count]))
 }
 
 public func ListFromString(str: String) -> List<Character> {
@@ -61,11 +75,7 @@ extension Character: CharacterProtocol {
 public extension List where T: CharacterProtocol {
     func toString() -> String {
         var str = ""
-        var list = self
-        while case let .Cons(head, tail) = list {
-            str.append(head.value.asCharacter)
-            list = tail.value
-        }
+        self.forEach{str.append($0.asCharacter)}
         return str
     }
 }

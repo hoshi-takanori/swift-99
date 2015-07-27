@@ -12,27 +12,46 @@ enum Code<T> {
 }
 
 func myLength<T>(list: List<T>) -> Int {
-    guard case let .Cons(_, tail) = list else { return 0 }
-    return 1 + myLength(tail.value)
+    return list.reduce(0) {(n, m) in n + 1}
 }
 
 func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
-    guard case let .Cons(head, tail) = list else { return .Nil }
-    let packed = pack(tail.value)
-    guard case let .Cons(head2, tail2) = packed else { return Cons(list, packed) }
-    guard case let .Cons(head3, _) = head2.value else { return Cons(list, tail2.value) }
-    if head.value == head3.value {
-        return Cons(Cons(head.value, head2.value), tail2.value)
-    } else {
-        return Cons(Cons(head.value, .Nil), packed)
+    switch list {
+    case .Nil:
+        return .Nil
+    case let .Cons(head, tail):
+        let packed = pack(tail)
+        switch packed {
+        case .Nil:
+            return .Cons(list, packed)
+        case let .Cons(head2, tail2):
+            switch head2 {
+            case .Nil:
+                return .Cons(list, tail2)
+            case let .Cons(head3, _):
+                if head == head3 {
+                    return .Cons(.Cons(head, head2), tail2)
+                } else {
+                    return .Cons(.Cons(head, .Nil), packed)
+                }
+            }
+        }
     }
 }
 
 func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
     func conv(list: List<List<T>>) -> List<(Int, T)> {
-        guard case let .Cons(head, tail) = list else { return .Nil }
-        guard case let .Cons(head2, _) = head.value else { return conv(tail.value) }
-        return Cons((myLength(head.value), head2.value), conv(tail.value))
+        switch list {
+        case .Nil:
+            return .Nil
+        case let .Cons(head, tail):
+            switch head {
+            case .Nil:
+                return conv(tail)
+            case let .Cons(head2, _):
+                return .Cons((myLength(head), head2), conv(tail))
+            }
+        }
     }
     return conv(pack(list))
 }
@@ -59,7 +78,7 @@ func decodeMultiple<T>(cnt: Int, _ value: T, _ tail: List<T>) -> List<T> {
     if cnt <= 0 {
         return tail
     } else {
-        return Cons(value, decodeMultiple(cnt - 1, value, tail))
+        return .Cons(value, decodeMultiple(cnt - 1, value, tail))
     }
 }
 
@@ -68,11 +87,11 @@ func decodeModified<T>(list: List<Code<T>>) -> List<T> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        switch head.value {
+        switch head {
         case let .Single(value):
-            return Cons(value, decodeModified(tail.value))
+            return .Cons(value, decodeModified(tail))
         case let .Multiple(cnt, value):
-            return decodeMultiple(cnt, value, decodeModified(tail.value))
+            return decodeMultiple(cnt, value, decodeModified(tail))
         }
     }
 }
@@ -96,23 +115,23 @@ func encodeDirect<T: Comparable>(list: List<T>) -> List<Code<T>> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        let encoded = encodeDirect(tail.value)
+        let encoded = encodeDirect(tail)
         switch encoded {
         case .Nil:
-            return Cons(.Single(head.value), encoded)
+            return .Cons(.Single(head), encoded)
         case let .Cons(code, tail2):
-            switch code.value {
+            switch code {
             case let .Single(value):
-                if value == head.value {
-                    return Cons(.Multiple(2, value), tail2.value)
+                if value == head {
+                    return .Cons(.Multiple(2, value), tail2)
                 } else {
-                    return Cons(.Single(head.value), encoded)
+                    return .Cons(.Single(head), encoded)
                 }
             case let .Multiple(cnt, value):
-                if value == head.value {
-                    return Cons(.Multiple(cnt + 1, value), tail2.value)
+                if value == head {
+                    return .Cons(.Multiple(cnt + 1, value), tail2)
                 } else {
-                    return Cons(.Single(head.value), encoded)
+                    return .Cons(.Single(head), encoded)
                 }
             }
         }
@@ -130,7 +149,7 @@ func dupli<T>(list: List<T>) -> List<T> {
     case .Nil:
         return .Nil
     case let .Cons(head, tail):
-        return Cons(head.value, Cons(head.value, dupli(tail.value)))
+        return .Cons(head, .Cons(head, dupli(tail)))
     }
 }
 
@@ -145,9 +164,9 @@ func repli<T>(list: List<T>, _ cnt: Int) -> List<T> {
             return .Nil
         case let .Cons(head, tail):
             if i <= 0 {
-                return rep(tail.value, cnt, cnt)
+                return rep(tail, cnt, cnt)
             } else {
-                return Cons(head.value, rep(list, cnt, i - 1))
+                return .Cons(head, rep(list, cnt, i - 1))
             }
         }
     }
@@ -165,9 +184,9 @@ func dropEvery<T>(list: List<T>, _ skip: Int) -> List<T> {
             return .Nil
         case let .Cons(head, tail):
             if i <= 1 {
-                return drop(tail.value, skip, skip)
+                return drop(tail, skip, skip)
             } else {
-                return Cons(head.value, drop(tail.value, skip, i - 1))
+                return .Cons(head, drop(tail, skip, i - 1))
             }
         }
     }
@@ -186,8 +205,8 @@ func split<T>(list: List<T>, _ len: Int) -> (List<T>, List<T>) {
         if len <= 0 {
             return (.Nil, list)
         } else {
-            let (a, b) = split(tail.value, len - 1)
-            return (Cons(head.value, a), b)
+            let (a, b) = split(tail, len - 1)
+            return (.Cons(head, a), b)
         }
     }
 }
@@ -214,8 +233,7 @@ slice(ListFromString("abcdefghik"), 3, 7).toString()
 //: Hint: Use the predefined functions length and (++).
 
 func append<T>(list1: List<T>, _ list2: List<T>) -> List<T> {
-    guard case let .Cons(head, tail) = list1 else { return list2 }
-    return Cons(head.value, append(tail.value, list2))
+    return list1.reduce(list2) {.Cons($1, $0)}
 }
 
 func rotate<T>(list: List<T>, _ cnt: Int) -> List<T> {
@@ -238,7 +256,7 @@ func removeAt<T>(list: List<T>, _ index: Int) -> (T?, List<T>) {
         if index <= 0 {
             return (nil, list)
         } else {
-            return (head.value, append(a, tail.value))
+            return (head, append(a, tail))
         }
     }
 }
