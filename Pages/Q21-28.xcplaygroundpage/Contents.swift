@@ -220,18 +220,15 @@ func encodeDirect<T: Comparable>(list: List<T>) -> List<(Int, T)> {
     switch list {
     case .Nil:
         return .Nil
-    case let .Cons(head, tail):
-        let encoded = encodeDirect(tail)
-        switch encoded {
+    case let .Cons(head, .Cons(head2, tail2)) where head == head2:
+        switch encodeDirect(.Cons(head2, tail2)) {
         case .Nil:
             return .Nil
-        case let .Cons((cnt, value), tail2):
-            if value == head {
-                return .Cons((1, head), encoded)
-            } else {
-                return .Cons((cnt + 1, value), tail2)
-            }
+        case let .Cons((cnt, value), tail):
+            return .Cons((cnt + 1, value), tail)
         }
+    case let .Cons(head, tail):
+        return .Cons((1, head), encodeDirect(tail))
     }
 }
 

@@ -19,39 +19,19 @@ func pack<T: Comparable>(list: List<T>) -> List<List<T>> {
     switch list {
     case .Nil:
         return .Nil
+    case let .Cons(head, .Cons(head2, tail2)) where head == head2:
+        guard case let .Cons(phead, ptail) = pack(.Cons(head2, tail2)) else { return .Nil }
+        return .Cons(.Cons(head, phead), ptail)
     case let .Cons(head, tail):
-        let packed = pack(tail)
-        switch packed {
-        case .Nil:
-            return .Cons(list, packed)
-        case let .Cons(head2, tail2):
-            switch head2 {
-            case .Nil:
-                return .Cons(list, tail2)
-            case let .Cons(head3, _):
-                if head == head3 {
-                    return .Cons(.Cons(head, head2), tail2)
-                } else {
-                    return .Cons(.Cons(head, .Nil), packed)
-                }
-            }
-        }
+        return .Cons(List(head), pack(tail))
     }
 }
 
 func encode<T: Comparable>(list: List<T>) -> List<(Int, T)> {
     func conv(list: List<List<T>>) -> List<(Int, T)> {
-        switch list {
-        case .Nil:
-            return .Nil
-        case let .Cons(head, tail):
-            switch head {
-            case .Nil:
-                return conv(tail)
-            case let .Cons(head2, _):
-                return .Cons((myLength(head), head2), conv(tail))
-            }
-        }
+        guard case let .Cons(head, tail) = list else {return .Nil }
+        guard case let .Cons(head1, _) = head else {return conv(tail) }
+        return .Cons((myLength(head), head1), conv(tail))
     }
     return conv(pack(list))
 }
@@ -75,24 +55,18 @@ encodeModified(ListFromString("aaaabccaadeeee")).toArray()
 //: Construct its uncompressed version.
 
 func decodeMultiple<T>(cnt: Int, _ value: T, _ tail: List<T>) -> List<T> {
-    if cnt <= 0 {
-        return tail
-    } else {
-        return .Cons(value, decodeMultiple(cnt - 1, value, tail))
-    }
+    guard cnt > 0 else { return tail }
+    return .Cons(value, decodeMultiple(cnt - 1, value, tail))
 }
 
 func decodeModified<T>(list: List<Code<T>>) -> List<T> {
     switch list {
     case .Nil:
         return .Nil
-    case let .Cons(head, tail):
-        switch head {
-        case let .Single(value):
-            return .Cons(value, decodeModified(tail))
-        case let .Multiple(cnt, value):
-            return decodeMultiple(cnt, value, decodeModified(tail))
-        }
+    case let .Cons(.Single(value), tail):
+        return .Cons(value, decodeModified(tail))
+    case let .Cons(.Multiple(cnt, value), tail):
+        return decodeMultiple(cnt, value, decodeModified(tail))
     }
 }
 
@@ -114,27 +88,17 @@ func encodeDirect<T: Comparable>(list: List<T>) -> List<Code<T>> {
     switch list {
     case .Nil:
         return .Nil
-    case let .Cons(head, tail):
-        let encoded = encodeDirect(tail)
-        switch encoded {
+    case let .Cons(head, .Cons(head2, tail2)) where head == head2:
+        switch encodeDirect(.Cons(head2, tail2)) {
         case .Nil:
-            return .Cons(.Single(head), encoded)
-        case let .Cons(code, tail2):
-            switch code {
-            case let .Single(value):
-                if value == head {
-                    return .Cons(.Multiple(2, value), tail2)
-                } else {
-                    return .Cons(.Single(head), encoded)
-                }
-            case let .Multiple(cnt, value):
-                if value == head {
-                    return .Cons(.Multiple(cnt + 1, value), tail2)
-                } else {
-                    return .Cons(.Single(head), encoded)
-                }
-            }
+            return .Nil
+        case let .Cons(.Single(value), tail):
+            return .Cons(.Multiple(2, value), tail)
+        case let .Cons(.Multiple(cnt, value), tail):
+            return .Cons(.Multiple(cnt + 1, value), tail)
         }
+    case let .Cons(head, tail):
+        return .Cons(.Single(head), encodeDirect(tail))
     }
 }
 
