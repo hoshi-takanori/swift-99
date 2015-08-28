@@ -50,7 +50,7 @@ public enum List<T> {
 
 func listFromSlice<T>(arr: ArraySlice<T>) -> List<T> {
     if arr.count == 0 { return List.Nil }
-    return .Cons(arr[0], listFromSlice(arr[1..<arr.count]))
+    return .Cons(arr[arr.startIndex], listFromSlice(arr[arr.startIndex + 1 ..< arr.endIndex]))
 }
 
 public func ListFromString(str: String) -> List<Character> {
@@ -64,12 +64,12 @@ public func ListFromString(str: String) -> List<Character> {
 // we need to have a protocol to define List<Character>.toString().
 // see http://ericasadun.com/2015/06/26/swift-protocol-requirements/
 
-protocol CharacterProtocol {
+public protocol CharacterProtocol {
     var asCharacter: Character { get }
 }
 
 extension Character: CharacterProtocol {
-    var asCharacter: Character { return self }
+    public var asCharacter: Character { return self }
 }
 
 public extension List where T: CharacterProtocol {
